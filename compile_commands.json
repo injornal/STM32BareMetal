@@ -1,0 +1,28 @@
+[
+  {
+    "file": "src/main.c",
+    "arguments": [
+      "/opt/homebrew/bin/arm-none-eabi-gcc",
+      "src/main.c",
+      "-o",
+      "bin/blink.elf",
+      "-mcpu=cortex-m3",
+      "-mthumb"
+    ],
+    "directory": "/Users/kostiantynbabich/Programming/STM32",
+    "output": "bin/blink.elf"
+  },
+  {
+    "file": "src/startup.c",
+    "arguments": [
+      "/opt/homebrew/bin/arm-none-eabi-gcc",
+      "src/startup.c",
+      "-o",
+      "bin/blink.elf",
+      "-mcpu=cortex-m3",
+      "-mthumb"
+    ],
+    "directory": "/Users/kostiantynbabich/Programming/STM32",
+    "output": "bin/blink.elf"
+  }
+]
