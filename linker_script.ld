@@ -1,14 +1,54 @@
+ENTRY(reset_handler)
 MEMORY
 {
-  FLASH (rx): ORIGIN = 0x08000000, LENGTH = 64K
-  SRAM (xrw): ORIGIN = 0x20000000, LENGTH = 20K
+    FLASH (rx): ORIGIN = 0x08000000, LENGTH = 64K
+    SRAM (xrw): ORIGIN = 0x20000000, LENGTH = 20K
 }
+
 PROVIDE(_stack = ORIGIN(SRAM) + LENGTH(SRAM));
+
 SECTIONS
 {
-    .text : {
-	*(.vectors)
-	*(.text*)
-	. = ALIGN(4);
+    .isr_vector :
+    {
+        . = ALIGN(4);
+        KEEP(*(.isr_vector))
+        . = ALIGN(4);
     } > FLASH
+
+    .text :
+    {
+        *(.text)
+        *(.text.*)
+        . = ALIGN(4);
+    } > FLASH
+
+    .rodata :
+    {
+        *(.rodata)
+        *(.rodata.*)
+        . = ALIGN(4);
+    } > FLASH
+
+    _la_data = LOADADDR(.data);
+
+    .data :
+    {
+        _sdata = .;
+        *(.data)
+        *(.data.*)
+        . = ALIGN(4);
+        _edata = .;
+    } > SRAM AT > FLASH
+
+    .bss :
+    {
+        _sbss = .;
+        *(.bss)
+        *(.bss.*)
+        *(COMMON)
+        . = ALIGN(4);
+        _ebss = .;
+    } > SRAM
 }
+

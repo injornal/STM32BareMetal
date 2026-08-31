@@ -1,5 +1,13 @@
 #include <stdint.h>
-extern uint32_t _stack;  // Provided by the linker file
+
+// Provided by the linker file
+extern uint32_t _la_data;
+extern uint32_t _sdata;
+extern uint32_t _edata;
+extern uint32_t _sbss;
+extern uint32_t _ebss;
+extern uint32_t _stack;
+
 extern int main(void);
 
 // Type for the IVT handlers (ISRs)
@@ -7,6 +15,9 @@ typedef void (*isr_handler_t)(void);
 
 // Definitions of all the handlers
 static void reset_handler(void);
+static void data_init(void);
+static void bss_init(void);
+
 static void nmi_handler(void);
 static void hard_fault_handler(void);
 static void mem_manage_handler(void);
@@ -17,8 +28,8 @@ static void pend_sv_handler(void);
 static void systick_handler(void);
 
 // IVT layout
-__attribute__((section(".vectors"))) struct {
-  uint32_t initial_sp;        // 0x0000
+__attribute__((section(".isr_vector"))) struct {
+  uintptr_t initial_sp;       // 0x0000
   isr_handler_t reset;        // 0x0004
   isr_handler_t nmi;          // 0x0008
   isr_handler_t hard_fault;   // 0x000C
@@ -38,7 +49,7 @@ __attribute__((section(".vectors"))) struct {
   isr_handler_t systick;         // 0x003C
 
   isr_handler_t irq[68];  // 0x0040 - 0x014C
-} vector_table = {.initial_sp = (uint32_t)&_stack,
+} vector_table = {.initial_sp = (uintptr_t)&_stack,
                   .reset = reset_handler,
                   .nmi = nmi_handler,
                   .hard_fault = hard_fault_handler,
@@ -48,9 +59,31 @@ __attribute__((section(".vectors"))) struct {
                   .svc = svc_handler,
                   .pend_sv = pend_sv_handler,
                   .systick = systick_handler};
-static void reset_handler(void) { main(); }
+
+__attribute__((noreturn)) static void reset_handler(void) {
+  data_init();
+  bss_init();
+  main();
+  while (1);
+}
+
+static void data_init(void) {
+  uint32_t* src = &_la_data;
+  uint32_t* dst = &_sdata;
+  while (dst < &_edata) {
+    *dst++ = *src++;
+  }
+}
+
+static void bss_init(void) {
+  uint32_t* dst = &_sbss;
+  while (dst < &_ebss) {
+    *dst++ = 0;
+  }
+}
+
 static void nmi_handler(void) {}
-static void hard_fault_handler(void) {}
+__attribute__((noreturn)) static void hard_fault_handler(void) { while (1); }
 static void mem_manage_handler(void) {}
 static void bus_fault_handler(void) {}
 static void usage_fault_handler(void) {}
