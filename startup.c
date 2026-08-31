@@ -82,11 +82,11 @@ static void bss_init(void) {
   }
 }
 
-static void nmi_handler(void) {}
+__attribute__((noreturn)) static void nmi_handler(void) { while (1); }
 __attribute__((noreturn)) static void hard_fault_handler(void) { while (1); }
-static void mem_manage_handler(void) {}
-static void bus_fault_handler(void) {}
-static void usage_fault_handler(void) {}
-static void svc_handler(void) {}
-static void pend_sv_handler(void) {}
-static void systick_handler(void) {}
+__attribute__((noreturn)) static void mem_manage_handler(void) { while (1); }
+__attribute__((noreturn)) static void bus_fault_handler(void) { while (1); }
+__attribute__((noreturn)) static void usage_fault_handler(void) { while (1); }
+__attribute__((noreturn)) static void svc_handler(void) { while (1); }
+__attribute__((noreturn)) static void pend_sv_handler(void) { while (1); }
+__attribute__((noreturn)) static void systick_handler(void) { while (1); }
