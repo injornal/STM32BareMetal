@@ -1,4 +1,3 @@
-ENTRY(reset_handler)
 MEMORY
 {
     FLASH (rx): ORIGIN = 0x08000000, LENGTH = 64K
@@ -44,11 +43,22 @@ SECTIONS
     .bss :
     {
         _sbss = .;
+        __bss_start__ = _sbss;
         *(.bss)
         *(.bss.*)
         *(COMMON)
         . = ALIGN(4);
         _ebss = .;
+        __bss_end__ = _ebss;
+    } > SRAM
+
+    .heap :
+    {
+        _sheap = .;
+        . = . + 0x1000; /* 4KB mean heap size */
+        . = ALIGN(4);
+        _eheap = .;
+        end = _eheap;
     } > SRAM
 }
 

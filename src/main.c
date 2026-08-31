@@ -12,14 +12,50 @@
 #define RCC_IOPCEN (1 << 4)
 #define GPIOC13 (1UL << 13)
 
+void init_clock(void);
+void turn_on_led(void);
+void turn_off_led(void);
+void blink_led(void);
+void error(void);
+
 int main(void) {
+  init_clock();
+  blink_led();
+
+  int* state = (int*)malloc(sizeof(int));
+  if (state == NULL) {
+    error();
+  }
+  *state = 1234;
+  if (*state == 1234) {
+    blink_led();
+  } else {
+    error();
+  }
+
+  return EXIT_SUCCESS;
+}
+
+void init_clock(void) {
   RCC_APB2ENR |= RCC_IOPCEN;
   GPIOC_CRH &= 0xFF0FFFFF;
   GPIOC_CRH |= 0x00200000;
+}
 
-  // if led is ON turn it off, if led is OFF turn it ON
-  GPIOC_ODR &= ~GPIOC13;
-  for (volatile uint32_t i = 0; i < 500000; ++i);
-  GPIOC_ODR |= GPIOC13;
-  return EXIT_SUCCESS;
+void turn_on_led(void) { GPIOC_ODR &= ~GPIOC13; }
+
+void turn_off_led(void) { GPIOC_ODR |= GPIOC13; }
+
+void blink_led(void) {
+  turn_on_led();
+  for (volatile uint32_t i = 0; i < 50000; ++i);
+  turn_off_led();
+  for (volatile uint32_t i = 0; i < 50000; ++i);
+}
+
+void error(void) {
+  init_clock();
+  while (1) {
+    blink_led();
+  }
 }

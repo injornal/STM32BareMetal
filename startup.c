@@ -9,6 +9,7 @@ extern uint32_t _ebss;
 extern uint32_t _stack;
 
 extern int main(void);
+__attribute__((noreturn)) extern void error(void);
 
 // Type for the IVT handlers (ISRs)
 typedef void (*isr_handler_t)(void);
@@ -83,7 +84,7 @@ static void bss_init(void) {
 }
 
 __attribute__((noreturn)) static void nmi_handler(void) { while (1); }
-__attribute__((noreturn)) static void hard_fault_handler(void) { while (1); }
+__attribute__((noreturn)) static void hard_fault_handler(void) { error(); }
 __attribute__((noreturn)) static void mem_manage_handler(void) { while (1); }
 __attribute__((noreturn)) static void bus_fault_handler(void) { while (1); }
 __attribute__((noreturn)) static void usage_fault_handler(void) { while (1); }
