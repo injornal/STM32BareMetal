@@ -1,5 +1,6 @@
 #include <stdint.h>
-#include <stdlib.h>
+
+#include "timer.h"
 
 // register address
 #define RCC_BASE 0x40021000
@@ -12,28 +13,27 @@
 #define RCC_IOPCEN (1 << 4)
 #define GPIOC13 (1UL << 13)
 
+#define BLINK_SLOW 1000
+#define BLINK_FAST 200
+
+#define ASM_WFI __asm__ __volatile__("wfi")
+
+extern volatile uint32_t systick_counter;
+
 void init_clock(void);
 void turn_on_led(void);
 void turn_off_led(void);
-void blink_led(void);
+void toggle_led(void);
+void blink_led(uint32_t wait_ms);
 void error(void);
 
 int main(void) {
   init_clock();
-  blink_led();
-
-  int* state = (int*)malloc(sizeof(int));
-  if (state == NULL) {
-    error();
+  set_timer(TIM2, BLINK_SLOW);
+  set_irq_handler(TIM2, toggle_led);
+  while (1) {
+    ASM_WFI;
   }
-  *state = 1234;
-  if (*state == 1234) {
-    blink_led();
-  } else {
-    error();
-  }
-
-  return EXIT_SUCCESS;
 }
 
 void init_clock(void) {
@@ -46,16 +46,20 @@ void turn_on_led(void) { GPIOC_ODR &= ~GPIOC13; }
 
 void turn_off_led(void) { GPIOC_ODR |= GPIOC13; }
 
-void blink_led(void) {
+void toggle_led(void) { GPIOC_ODR ^= GPIOC13; }
+
+void blink_led(uint32_t wait_ms) {
   turn_on_led();
-  for (volatile uint32_t i = 0; i < 50000; ++i);
+  for (volatile uint32_t i = 0; i < 8000u * wait_ms; ++i) {
+  }
   turn_off_led();
-  for (volatile uint32_t i = 0; i < 50000; ++i);
+  for (volatile uint32_t i = 0; i < 8000u * wait_ms; ++i) {
+  }
 }
 
 void error(void) {
   init_clock();
   while (1) {
-    blink_led();
+    blink_led(BLINK_FAST);
   }
 }
